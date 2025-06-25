@@ -1,0 +1,131 @@
+/* Reset basic styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(to bottom right, #1f1f1f, #333);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 2vh 4vw;
+  overflow-x: hidden;
+}
+
+h1 {
+  margin: 2vh 0;
+  font-size: clamp(2rem, 6vw, 4rem);
+  color: #00ffc8;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  background: #000;
+  border-radius: 1rem;
+  box-shadow: 0 0 2rem #00ffc8;
+  gap: 12px;
+  margin: 2vh 0;
+  aspect-ratio: 1;
+  width: 90vmin;
+  max-width: 90vw;
+}
+
+.square {
+  background: #1a1a1a;
+  border: 2px solid #444;
+  border-radius: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.2s ease;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.square:hover {
+  transform: scale(1.03);
+  cursor: pointer;
+}
+
+.square img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+button#resetBtn {
+  margin-top: 3vh;
+  padding: 1rem 2rem;
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  background: #00ffc8;
+  color: black;
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 0.3rem 1.5rem rgba(0, 255, 200, 0.5);
+  transition: background 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+button#resetBtn:hover {
+  background: #00e6b0;
+  transform: scale(1.05);
+}
+
+/* Winning line styles */
+.win-line {
+  position: absolute;
+  background: linear-gradient(90deg, #00ffc8, #00eaff 60%, #fff 100%);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 0 24px 8px #00ffc8, 0 0 60px 0 #fff;
+  transition: width 0.7s cubic-bezier(.68,-0.55,.27,1.55), box-shadow 0.7s;
+}
+
+.dev-square {
+  background: #222;
+  border: 2px solid #00ffc8;
+  border-radius: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  transition: transform 0.2s;
+}
+
+.dev-square:hover {
+  background: #333;
+}
+
+@media screen and (max-width: 600px) {
+  .board {
+    width: 90vw;
+  }
+
+  button#resetBtn {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  .board {
+    width: 50vmin;
+    max-width: 600px;
+  }
+}

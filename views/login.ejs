@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login - Tic Tac Toe</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <h1>Login</h1>
+  <% if (error) { %>
+    <p style="color:red"><%= error %></p>
+  <% } %>
+  <form method="POST" action="/login">
+    <label>Username: <input type="text" name="username" required /></label><br/><br/>
+    <label>Password: <input type="password" name="password" required /></label><br/><br/>
+    <button type="submit">Login</button>
+  </form>
+  <p>Don't have an account? <a href="/signup">Sign up here</a></p>
+</body>
+</html>
