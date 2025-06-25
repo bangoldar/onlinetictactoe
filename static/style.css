@@ -112,6 +112,10 @@ button#resetBtn:hover {
   background: #333;
 }
 
+#playersStats {
+  text-align: center;
+}
+
 @media screen and (max-width: 600px) {
   .board {
     width: 90vw;
