@@ -115,12 +115,12 @@ function updatePlayersStats(players) {
     playersStats.textContent = 'No players connected';
     return;
   }
-  let text = 'Players stats:\n';
+  let text = 'Players stats:<br>';
   players.forEach(p => {
     const symbol = p.symbol === 'spectator' ? 'Spectator' : p.symbol.toUpperCase();
-    text += `${p.username} (${symbol}) - Wins: ${p.wins || 0}, Losses: ${p.losses || 0}\n`;
+    text += `${p.username} (${symbol}) - Wins: ${p.wins || 0}, Losses: ${p.losses || 0}<br>`;
   });
-  playersStats.textContent = text;
+  playersStats.innerHTML = text;
 }
 
 Array.from(squares).forEach(sq => {
