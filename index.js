@@ -212,6 +212,9 @@ function checkWin(moves) {
   return null;
 }
 
+const chatHistory = []; // In-memory chat history
+const CHAT_HISTORY_LIMIT = 100; // Limit to last 100 messages
+
 io.on('connection', async (socket) => {
   // Reject unauthorized users if no session
   if (!socket.handshake.session || !socket.handshake.session.user) {
@@ -234,6 +237,9 @@ io.on('connection', async (socket) => {
     players: Object.values(players).filter(p => p.symbol === 'x' || p.symbol === 'o').length,
     spectators: Object.values(players).filter(p => p.symbol === 'spectator').length,
   });
+
+  // Send chat history to the newly connected client
+  socket.emit('chatHistory', chatHistory);
 
   socket.on('makeMove', async ({ place, symbol }) => {
     if (!gameActive) {
@@ -369,6 +375,21 @@ io.on('connection', async (socket) => {
       players: Object.values(players).filter(p => p.symbol === 'x' || p.symbol === 'o').length,
       spectators: Object.values(players).filter(p => p.symbol === 'spectator').length,
     });
+  });
+
+  socket.on('chatMsg', (msg) => {
+    const username = socket.handshake.session.user.username;
+    if (typeof msg === 'string' && msg.trim().length > 0 && msg.length <= 200) {
+      const chatMsg = { user: username, msg: msg.trim().slice(0, 200) };
+      chatHistory.push(chatMsg);
+      if (chatHistory.length > CHAT_HISTORY_LIMIT) chatHistory.shift();
+      io.emit('chatMsg', chatMsg);
+    }
+  });
+
+  socket.on('clearChat', () => {
+    chatHistory.length = 0; // Clear the chat history array
+    io.emit('chatHistory', []); // Update all clients
   });
 });
 

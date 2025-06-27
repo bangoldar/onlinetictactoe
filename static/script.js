@@ -12,6 +12,10 @@ const playersStats = document.getElementById('playersStats');
 const winMessage = document.getElementById('winMessage');
 const resetBtn = document.getElementById('resetBtn');
 const lineupBlock = document.getElementById('lineupBlock');
+const chatForm = document.getElementById('chatForm');
+const chatInput = document.getElementById('chatInput');
+const chatMessages = document.getElementById('chatMessages');
+const clearChatBtn = document.getElementById('clearChatBtn');
 
 function clearBoard() {
   for (let sq of squares) {
@@ -147,6 +151,19 @@ resetBtn.addEventListener('click', () => {
   }
 });
 
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const msg = chatInput.value.trim();
+  if (msg.length > 0) {
+    socket.emit('chatMsg', msg);
+    chatInput.value = '';
+  }
+});
+
+clearChatBtn.addEventListener('click', () => {
+  socket.emit('clearChat');
+});
+
 // Socket events
 
 socket.on('assignSymbol', ({ symbol, name, stats }) => {
@@ -224,4 +241,23 @@ socket.on('spectatorLineup', (lineup) => {
     lineupBlock.style.display = 'none';
     lineupBlock.innerHTML = '';
   }
+});
+
+socket.on('chatMsg', ({ user, msg }) => {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'chat-msg';
+  msgDiv.innerHTML = `<span class="chat-user">${user}:</span> ${msg}`;
+  chatMessages.appendChild(msgDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+socket.on('chatHistory', (history) => {
+  chatMessages.innerHTML = '';
+  history.forEach(({ user, msg }) => {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'chat-msg';
+    msgDiv.innerHTML = `<span class="chat-user">${user}:</span> ${msg}`;
+    chatMessages.appendChild(msgDiv);
+  });
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 });

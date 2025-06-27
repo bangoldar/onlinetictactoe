@@ -23,5 +23,13 @@
   </div>
   <button id="resetBtn">Reset Board</button>
   <div id="winMessage" style="margin-top:1rem; font-size:1.5rem; color:#00ffc8;"></div>
+  <div id="chatContainer">
+    <div id="chatMessages"></div>
+    <form id="chatForm" autocomplete="off">
+      <input id="chatInput" type="text" maxlength="200" placeholder="Type a message..." autocomplete="off" />
+      <button type="submit">Send</button>
+      <button type="button" id="clearChatBtn" style="margin-left:0.5em;">Clear Chat</button>
+    </form>
+  </div>
 </body>
 </html>
