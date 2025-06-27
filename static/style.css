@@ -36,8 +36,9 @@ h1 {
   gap: 12px;
   margin: 2vh 0;
   aspect-ratio: 1;
-  width: 90vmin;
-  max-width: 90vw;
+  width: 420px;
+  max-width: 95vw;
+  min-width: 220px;
 }
 
 .square {
