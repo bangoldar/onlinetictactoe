@@ -126,25 +126,8 @@ let players = {};
 let playerSlots = { x: null, o: null };
 let currentTurn = 'x';
 let gameActive = true;
-const devModeUsers = new Set();
 
 function assignRole(socketId, username) {
-  // Developer Mode: allow both X and O for this user
-  if (devModeUsers.has(username)) {
-    if (!playerSlots.x) {
-      playerSlots.x = socketId;
-      players[socketId] = { symbol: 'x', username };
-      return 'x';
-    }
-    if (!playerSlots.o) {
-      playerSlots.o = socketId;
-      players[socketId] = { symbol: 'o', username };
-      return 'o';
-    }
-    players[socketId] = { symbol: 'spectator', username };
-    return 'spectator';
-  }
-
   // Not in dev mode: only allow one active player per username
   const usernameAlreadyConnected = Object.values(players).some(
     p => p.username === username
@@ -174,7 +157,6 @@ function assignRole(socketId, username) {
 async function broadcastPlayersInfo() {
   const uniquePlayers = {};
   for (const p of Object.values(players)) {
-    // Only keep the first occurrence of each username
     if (!uniquePlayers[p.username]) {
       uniquePlayers[p.username] = p;
     }
@@ -182,7 +164,6 @@ async function broadcastPlayersInfo() {
   const usernames = Object.keys(uniquePlayers);
   const users = await User.find({ username: { $in: usernames } });
 
-  // Attach stats
   for (const username of usernames) {
     const user = users.find(u => u.username === username);
     if (user) {
@@ -194,7 +175,13 @@ async function broadcastPlayersInfo() {
     }
   }
 
+  // Spectator lineup (in join order)
+  const spectatorLineup = Object.values(players)
+    .filter(p => p.symbol === 'spectator')
+    .map(p => p.username);
+
   io.emit('playersInfo', Object.values(uniquePlayers));
+  io.emit('spectatorLineup', spectatorLineup);
 }
 
 function resetGame() {
@@ -278,19 +265,58 @@ io.on('connection', async (socket) => {
     if (win) {
       gameActive = false;
 
-      const winnerPlayer = Object.values(players).find(p => p.symbol === win.winner);
-      const loserPlayer = Object.values(players).find(p => p.symbol !== win.winner && p.symbol !== 'spectator');
+      const winnerPlayer = Object.entries(players).find(([id, p]) => p.symbol === win.winner);
+      const loserPlayer = Object.entries(players).find(([id, p]) => p.symbol !== win.winner && p.symbol !== 'spectator');
 
+      // Update stats
       if (winnerPlayer) {
-        await User.findOneAndUpdate({ username: winnerPlayer.username }, { $inc: { wins: 1 } });
+        await User.findOneAndUpdate({ username: winnerPlayer[1].username }, { $inc: { wins: 1 } });
       }
       if (loserPlayer) {
-        await User.findOneAndUpdate({ username: loserPlayer.username }, { $inc: { losses: 1 } });
+        await User.findOneAndUpdate({ username: loserPlayer[1].username }, { $inc: { losses: 1 } });
+      }
+
+      // Get winner's username BEFORE changing any symbols
+      const winnerUsername =
+        winnerPlayer && winnerPlayer[1] && winnerPlayer[1].username
+          ? winnerPlayer[1].username
+          : null;
+
+      // --- Symbol swap and spectator promotion ---
+      // Find all spectators in join order
+      const spectatorEntries = Object.entries(players).filter(([id, p]) => p.symbol === 'spectator');
+      if (winnerPlayer && loserPlayer) {
+        const [winnerId, winnerObj] = winnerPlayer;
+        const [loserId, loserObj] = loserPlayer;
+
+        // If there is at least one spectator, promote first spectator to replace loser
+        if (spectatorEntries.length > 0) {
+          const [specId, specObj] = spectatorEntries[0];
+          // Assign loser as spectator
+          players[loserId].symbol = 'spectator';
+          // Promote spectator to loser's symbol
+          players[specId].symbol = loserObj.symbol;
+          // Update playerSlots
+          if (loserObj.symbol === 'x') playerSlots.x = specId;
+          if (loserObj.symbol === 'o') playerSlots.o = specId;
+          // Remove spectator from lineup
+          // (already handled by symbol change)
+        } else {
+          // No spectators: just swap X and O
+          const temp = winnerObj.symbol;
+          players[winnerId].symbol = loserObj.symbol;
+          players[loserId].symbol = temp;
+          // Update playerSlots
+          if (players[winnerId].symbol === 'x') playerSlots.x = winnerId;
+          if (players[winnerId].symbol === 'o') playerSlots.o = winnerId;
+          if (players[loserId].symbol === 'x') playerSlots.x = loserId;
+          if (players[loserId].symbol === 'o') playerSlots.o = loserId;
+        }
       }
 
       await broadcastPlayersInfo();
 
-      io.emit('winDetected', { winner: win.winner, line: win.line });
+      io.emit('winDetected', { winner: win.winner, line: win.line, winnerUsername });
     } else {
       if (allMoves.length >= 9) {
         gameActive = false;
@@ -308,29 +334,6 @@ io.on('connection', async (socket) => {
       return;
     }
     resetGame();
-  });
-
-  socket.on('toggleDevMode', () => {
-    const username = socket.handshake.session.user.username;
-    if (username === 'alex') {
-      if (devModeUsers.has(username)) {
-        devModeUsers.delete(username);
-      } else {
-        devModeUsers.add(username);
-      }
-      // Remove this user's slots so they can rejoin as X and O
-      if (playerSlots.x && players[playerSlots.x] && players[playerSlots.x].username === username) {
-        delete players[playerSlots.x];
-        playerSlots.x = null;
-      }
-      if (playerSlots.o && players[playerSlots.o] && players[playerSlots.o].username === username) {
-        delete players[playerSlots.o];
-        playerSlots.o = null;
-      }
-      io.emit('errorMsg', devModeUsers.has(username)
-        ? 'Developer Mode enabled: You can play as both X and O.'
-        : 'Developer Mode disabled: Normal restrictions apply.');
-    }
   });
 
   socket.on('disconnect', () => {
@@ -369,15 +372,6 @@ io.on('connection', async (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server started on http://localhost:3000');
+server.listen(3000, '10.0.0.208', () => {
+  console.log('Server started on http://10.0.0.208:3000');
 });
-
-function updateStats(winnerUsername, loserUsername) {
-  // Don't update stats for alex in dev mode
-  if ((devModeUsers.has(winnerUsername) && winnerUsername === 'alex') ||
-      (devModeUsers.has(loserUsername) && loserUsername === 'alex')) {
-    return;
-  }
-  // ...existing win/loss update logic...
-}

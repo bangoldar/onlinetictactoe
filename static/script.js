@@ -10,6 +10,7 @@ const turnInfo = document.getElementById('turnInfo');
 const playersStats = document.getElementById('playersStats');
 const winMessage = document.getElementById('winMessage');
 const resetBtn = document.getElementById('resetBtn');
+const lineupBlock = document.getElementById('lineupBlock');
 
 function clearBoard() {
   for (let sq of squares) {
@@ -181,10 +182,13 @@ socket.on('boardReset', () => {
   removeWinLine();
 });
 
-socket.on('winDetected', ({ winner, line }) => {
+socket.on('winDetected', ({ winner, line, winnerUsername }) => {
   gameActive = false;
   if (winner === 'draw') {
     winMessage.textContent = "It's a draw!";
+  } else if (winnerUsername) {
+    winMessage.textContent = `${winnerUsername} wins!`;
+    displayWinLine(line);
   } else {
     winMessage.textContent = `Player '${winner.toUpperCase()}' wins!`;
     displayWinLine(line);
@@ -200,11 +204,16 @@ socket.on('errorMsg', (msg) => {
   alert(msg);
 });
 
-// === Developer Mode (only for "alex") ===
-const devModeBtn = document.getElementById('devModeBtn');
-if (devModeBtn) {
-  devModeBtn.addEventListener('click', () => {
-    socket.emit('toggleDevMode');
-    setTimeout(() => window.location.reload(), 200); // Give server time to reset slots
-  });
-}
+socket.on('spectatorLineup', (lineup) => {
+  if (lineup && lineup.length > 0) {
+    lineupBlock.style.display = 'block';
+    let html = '<strong>Lineup:</strong><br>';
+    lineup.forEach((name, idx) => {
+      html += `${idx + 1}. ${name}<br>`;
+    });
+    lineupBlock.innerHTML = html;
+  } else {
+    lineupBlock.style.display = 'none';
+    lineupBlock.innerHTML = '';
+  }
+});

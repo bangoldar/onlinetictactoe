@@ -13,9 +13,6 @@
   <div id="userInfo" style="margin-bottom:1rem; font-size:1.2rem; color:#00ffc8;">
     Logged in as <strong><%= username %></strong> | <a href="/logout" style="color:#00ffc8;">Logout</a>
   </div>
-  <% if (username === 'alex') { %>
-    <button id="devModeBtn" style="margin-bottom:1rem; background:#222; color:#00ffc8; border:2px solid #00ffc8; border-radius:8px; padding:0.5rem 1.5rem; font-size:1rem; cursor:pointer;">Developer Mode</button>
-  <% } %>
   <div id="roleIndicator" style="margin-bottom: 1rem;"></div>
   <div id="turnInfo" style="margin-bottom: 1rem; color: #00ffc8;"></div>
   <div id="playersStats" style="margin-bottom: 1rem; color: #00ffc8;"></div>
@@ -26,28 +23,5 @@
   </div>
   <button id="resetBtn">Reset Board</button>
   <div id="winMessage" style="margin-top:1rem; font-size:1.5rem; color:#00ffc8;"></div>
-  <!-- Developer boards, hidden by default -->
-  <div id="devBoards" style="display:none; margin-top:2rem;">
-    <h2 style="color:#00ffc8;">Developer Mode: Two Local Boards</h2>
-    <div style="display:flex; gap:2rem; flex-wrap:wrap;">
-      <div>
-        <div style="text-align:center; margin-bottom:0.5rem;">Board 1</div>
-        <div class="board" id="devBoard1">
-          <% for(let i=1; i<=9; i++) { %>
-            <div class="dev-square" data-place="<%= i %>"></div>
-          <% } %>
-        </div>
-      </div>
-      <div>
-        <div style="text-align:center; margin-bottom:0.5rem;">Board 2</div>
-        <div class="board" id="devBoard2">
-          <% for(let i=1; i<=9; i++) { %>
-            <div class="dev-square" data-place="<%= i %>"></div>
-          <% } %>
-        </div>
-      </div>
-    </div>
-    <button id="devResetBtn" style="margin-top:1rem;">Reset Dev Boards</button>
-  </div>
 </body>
 </html>
