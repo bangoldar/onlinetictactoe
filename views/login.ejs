@@ -6,16 +6,20 @@
 <title>Login - Tic Tac Toe</title>
 <link rel="stylesheet" href="/style.css" />
 </head>
-<body>
-  <h1>Login</h1>
-  <% if (error) { %>
-    <p style="color:red"><%= error %></p>
-  <% } %>
-  <form method="POST" action="/login">
-    <label>Username: <input type="text" name="username" required /></label><br/><br/>
-    <label>Password: <input type="password" name="password" required /></label><br/><br/>
-    <button type="submit">Login</button>
-  </form>
-  <p>Don't have an account? <a href="/signup">Sign up here</a></p>
+<body class="auth-bg">
+  <div class="auth-container">
+    <h1>Login</h1>
+    <% if (error) { %>
+      <p style="color:#ff4d4d; margin-bottom:1rem;"><%= error %></p>
+    <% } %>
+    <form method="POST" action="/login" style="width:100%;">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required autocomplete="username" />
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password" />
+      <input type="submit" value="Login" />
+    </form>
+    <p>Don't have an account? <a href="/signup">Sign up here</a></p>
+  </div>
 </body>
 </html>

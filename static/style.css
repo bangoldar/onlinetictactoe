@@ -116,20 +116,99 @@ button#resetBtn:hover {
   text-align: center;
 }
 
-@media screen and (max-width: 600px) {
-  .board {
-    width: 90vw;
-  }
-
-  button#resetBtn {
-    width: 100%;
-    max-width: 320px;
-  }
+/* Auth (login/signup) page styles */
+.auth-container {
+  background: rgba(20, 20, 20, 0.97);
+  border-radius: 1.5rem;
+  box-shadow: 0 0 2rem #00ffc8, 0 0 1rem #00eaff inset;
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-width: 350px;
+  width: 100%;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-@media screen and (min-width: 1025px) {
-  .board {
-    width: 50vmin;
-    max-width: 600px;
-  }
+.auth-container h1 {
+  color: #00ffc8;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 10px #00ffc8aa;
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+}
+
+.auth-container label {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  width: 100%;
+}
+
+.auth-container input[type="text"],
+.auth-container input[type="password"] {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.2rem;
+  border: 2px solid #00ffc8;
+  border-radius: 0.7rem;
+  background: #181818;
+  color: #00ffc8;
+  font-size: 1.1rem;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 0.5rem #00ffc822 inset;
+}
+
+.auth-container input[type="text"]:focus,
+.auth-container input[type="password"]:focus {
+  border: 2px solid #00eaff;
+  box-shadow: 0 0 1rem #00eaff88;
+}
+
+.auth-container button,
+.auth-container input[type="submit"] {
+  background: linear-gradient(90deg, #00ffc8 60%, #00eaff 100%);
+  color: #181818;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.7rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  box-shadow: 0 0.2rem 1rem #00ffc855;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.auth-container button:hover,
+.auth-container input[type="submit"]:hover {
+  background: linear-gradient(90deg, #00eaff 0%, #00ffc8 100%);
+  transform: scale(1.04);
+}
+
+.auth-container p {
+  color: #fff;
+  margin-top: 1.2rem;
+  font-size: 1rem;
+}
+
+.auth-container a {
+  color: #00ffc8;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.auth-container a:hover {
+  color: #00eaff;
+}
+
+body.auth-bg {
+  background: linear-gradient(135deg, #00ffc8 0%, #1a1a1a 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }

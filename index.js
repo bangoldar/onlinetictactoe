@@ -129,10 +129,10 @@ let gameActive = true;
 const devModeUsers = new Set();
 
 function assignRole(socketId, username) {
-  // If dev mode is enabled for this user, allow them to take both slots (one per tab)
+  // Developer Mode: allow both X and O for this user
   if (devModeUsers.has(username)) {
     if (!playerSlots.x) {
-      playerSlots.x = socketId; // <-- FIXED
+      playerSlots.x = socketId;
       players[socketId] = { symbol: 'x', username };
       return 'x';
     }
@@ -145,59 +145,56 @@ function assignRole(socketId, username) {
     return 'spectator';
   }
 
-  // Check if this username is already X
-  const xPlayerId = playerSlots.x && players[playerSlots.x] && players[playerSlots.x].username === username ? playerSlots.x : null;
-  const oPlayerId = playerSlots.o && players[playerSlots.o] && players[playerSlots.o].username === username ? playerSlots.o : null;
-
-  if (xPlayerId && !oPlayerId && !playerSlots.o) {
-    // If X is this username and O is free, assign O
-    playerSlots.o = socketId;
-    players[socketId] = { symbol: 'o', username };
-    return 'o';
-  }
-
-  // If already X and O, or O is taken, assign spectator
-  if (xPlayerId && (oPlayerId || playerSlots.o)) {
+  // Not in dev mode: only allow one active player per username
+  const usernameAlreadyConnected = Object.values(players).some(
+    p => p.username === username
+  );
+  if (usernameAlreadyConnected) {
     players[socketId] = { symbol: 'spectator', username };
     return 'spectator';
   }
 
-  // If not X, assign X if free
+  // Assign X or O if free
   if (!playerSlots.x) {
     playerSlots.x = socketId;
     players[socketId] = { symbol: 'x', username };
     return 'x';
   }
-
-  // If not O, assign O if free
   if (!playerSlots.o) {
     playerSlots.o = socketId;
     players[socketId] = { symbol: 'o', username };
     return 'o';
   }
 
-  // Otherwise, spectator
+  // Otherwise, assign spectator
   players[socketId] = { symbol: 'spectator', username };
   return 'spectator';
 }
 
 async function broadcastPlayersInfo() {
-  const usernames = Object.values(players).map(p => p.username);
+  const uniquePlayers = {};
+  for (const p of Object.values(players)) {
+    // Only keep the first occurrence of each username
+    if (!uniquePlayers[p.username]) {
+      uniquePlayers[p.username] = p;
+    }
+  }
+  const usernames = Object.keys(uniquePlayers);
   const users = await User.find({ username: { $in: usernames } });
 
-  for (const socketId in players) {
-    const p = players[socketId];
-    const user = users.find(u => u.username === p.username);
+  // Attach stats
+  for (const username of usernames) {
+    const user = users.find(u => u.username === username);
     if (user) {
-      p.wins = user.wins;
-      p.losses = user.losses;
+      uniquePlayers[username].wins = user.wins;
+      uniquePlayers[username].losses = user.losses;
     } else {
-      p.wins = 0;
-      p.losses = 0;
+      uniquePlayers[username].wins = 0;
+      uniquePlayers[username].losses = 0;
     }
   }
 
-  io.emit('playersInfo', Object.values(players));
+  io.emit('playersInfo', Object.values(uniquePlayers));
 }
 
 function resetGame() {
@@ -321,12 +318,14 @@ io.on('connection', async (socket) => {
       } else {
         devModeUsers.add(username);
       }
-      // Reset slots so alex can rejoin as both X and O
-      playerSlots = { x: null, o: null };
-      for (const id in players) {
-        if (players[id].username === username) {
-          delete players[id];
-        }
+      // Remove this user's slots so they can rejoin as X and O
+      if (playerSlots.x && players[playerSlots.x] && players[playerSlots.x].username === username) {
+        delete players[playerSlots.x];
+        playerSlots.x = null;
+      }
+      if (playerSlots.o && players[playerSlots.o] && players[playerSlots.o].username === username) {
+        delete players[playerSlots.o];
+        playerSlots.o = null;
       }
       io.emit('errorMsg', devModeUsers.has(username)
         ? 'Developer Mode enabled: You can play as both X and O.'
@@ -373,3 +372,12 @@ io.on('connection', async (socket) => {
 server.listen(3000, () => {
   console.log('Server started on http://localhost:3000');
 });
+
+function updateStats(winnerUsername, loserUsername) {
+  // Don't update stats for alex in dev mode
+  if ((devModeUsers.has(winnerUsername) && winnerUsername === 'alex') ||
+      (devModeUsers.has(loserUsername) && loserUsername === 'alex')) {
+    return;
+  }
+  // ...existing win/loss update logic...
+}

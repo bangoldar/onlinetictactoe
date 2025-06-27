@@ -21,10 +21,10 @@ function clearBoard() {
 function createImage(symbol) {
   const img = document.createElement('img');
   if (symbol === 'x') {
-    img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Red_X.svg/1024px-Red_X.svg.png';
+    img.src = '/x.png';
     img.alt = 'X';
   } else if (symbol === 'o') {
-    img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/OOjs_UI_icon_edit-ltr-progressive.svg/1024px-OOjs_UI_icon_edit-ltr-progressive.svg.png';
+    img.src = '/o.png';
     img.alt = 'O';
   }
   return img;
@@ -205,5 +205,6 @@ const devModeBtn = document.getElementById('devModeBtn');
 if (devModeBtn) {
   devModeBtn.addEventListener('click', () => {
     socket.emit('toggleDevMode');
+    setTimeout(() => window.location.reload(), 200); // Give server time to reset slots
   });
 }
