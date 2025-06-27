@@ -3,6 +3,7 @@ const socket = io();
 let assignedSymbol = null;
 let currentTurn = null;
 let gameActive = true;
+let lastGameEnded = false;
 
 const squares = document.getElementsByClassName('square');
 const roleIndicator = document.getElementById('roleIndicator');
@@ -138,6 +139,12 @@ Array.from(squares).forEach(sq => {
 
 resetBtn.addEventListener('click', () => {
   socket.emit('resetBoard');
+  if (lastGameEnded) {
+    setTimeout(() => {
+      window.location.reload();
+    }, 300); // Give the server a moment to reset before reload
+    lastGameEnded = false;
+  }
 });
 
 // Socket events
@@ -184,6 +191,7 @@ socket.on('boardReset', () => {
 
 socket.on('winDetected', ({ winner, line, winnerUsername }) => {
   gameActive = false;
+  lastGameEnded = true;
   if (winner === 'draw') {
     winMessage.textContent = "It's a draw!";
   } else if (winnerUsername) {
