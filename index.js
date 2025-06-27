@@ -49,6 +49,14 @@ const moveSchema = new mongoose.Schema({
 });
 const Move = mongoose.model('Move', moveSchema);
 
+// Chat message schema and model
+const chatMessageSchema = new mongoose.Schema({
+  user: String,
+  msg: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
+
 // Middleware to check authentication
 function isAuthenticated(req, res, next) {
   if (req.session.user) return next();
@@ -212,8 +220,8 @@ function checkWin(moves) {
   return null;
 }
 
-const chatHistory = []; // In-memory chat history
 const CHAT_HISTORY_LIMIT = 100; // Limit to last 100 messages
+const chatHistory = [];
 
 io.on('connection', async (socket) => {
   // Reject unauthorized users if no session
@@ -377,19 +385,20 @@ io.on('connection', async (socket) => {
     });
   });
 
-  socket.on('chatMsg', (msg) => {
+  socket.on('chatMsg', async (msg) => {
     const username = socket.handshake.session.user.username;
     if (typeof msg === 'string' && msg.trim().length > 0 && msg.length <= 200) {
       const chatMsg = { user: username, msg: msg.trim().slice(0, 200) };
-      chatHistory.push(chatMsg);
-      if (chatHistory.length > CHAT_HISTORY_LIMIT) chatHistory.shift();
+      // Save to MongoDB
+      await ChatMessage.create(chatMsg);
+      // Broadcast to all clients
       io.emit('chatMsg', chatMsg);
     }
   });
 
-  socket.on('clearChat', () => {
-    chatHistory.length = 0; // Clear the chat history array
-    io.emit('chatHistory', []); // Update all clients
+  socket.on('clearChat', async () => {
+    await ChatMessage.deleteMany({});
+    io.emit('chatHistory', []);
   });
 });
 
