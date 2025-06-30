@@ -402,6 +402,6 @@ io.on('connection', async (socket) => {
   });
 });
 
-server.listen(3000, '10.0.0.208', () => {
-  console.log('Server started on http://10.0.0.208:3000');
+server.listen(3000, () => {
+  console.log('Server started on http://localhost:3000');
 });
